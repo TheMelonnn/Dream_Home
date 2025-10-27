@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add Product</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+      }
+
+      /* Navbar */
+      header {
+        position: sticky;
+        top: 0;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 12px 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        z-index: 10;
+      }
+
+      nav a {
+        margin-right: 16px;
+        color: #333;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .content {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 40px;
+      }
+
+      .form-container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        width: 700px;
+        text-align: center;
+      }
+
+      input[type="text"] {
+        width: 65%;
+        padding: 10px;
+        margin: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      select {
+        width: 25%;
+        padding: 10px;
+        margin: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      button {
+        background-color: #333;
+        color: white;
+        padding: 10px 20px;
+        margin-top: 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      button:hover {
+        background-color: #555;
+      }
+
+      .product-preview {
+        margin-top: 30px;
+        text-align: left;
+      }
+
+      .product-preview img {
+        max-width: 150px;
+        border-radius: 5px;
+      }
+
+      .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: #4caf50;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 5px;
+        display: none;
+        z-index: 1000;
+      }
+
+      .notification.error {
+        background-color: #f44336;
+      }
+
+      .back-btn {
+        background-color: #888;
+        margin-right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav style="display: flex; align-items: center; gap: 1px">
+        <a href="/dashboard" style="display: flex; align-items: center">
+          <img
+            src="/static/image/applogo.png"
+            alt="DreamHome Logo"
+            style="height: 37px"
+          />
+        </a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="/dashboard/{{ room_name }}"
+          >{{ room_name.replace('-', ' ') }}</a
+        >
+      </nav>
+    </header>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="form-container">
+        <h2>Enter Product Link</h2>
+        <form id="crawlForm" method="POST">
+          <input
+            type="text"
+            name="product_url"
+            placeholder="Paste product link here..."
+            autocomplete="off"
+            required
+          />
+          <select name="source">
+            <option value="ruparupa">Rupa Rupa</option>
+            <option value="ikea">IKEA</option>
+            <option value="ufoelektronika">UFO Elektronika</option>
+          </select>
+          <br />
+          <button type="submit">Crawl</button>
+        </form>
+
+        {% if product %}
+        <div class="product-preview">
+          <h3>Preview:</h3>
+          <img src="{{ product.image }}" alt="Product Image" />
+          <p><strong>Name:</strong> {{ product.name }}</p>
+          <p><strong>Price:</strong> Rp{{ product.price }}</p>
+
+          <form action="/{{ room_name }}/save-product" method="POST">
+            <input type="hidden" name="name" value="{{ product.name }}" />
+            <input type="hidden" name="price" value="{{ product.price }}" />
+            <input
+              type="hidden"
+              name="product_url"
+              value="{{ product.link }}"
+            />
+            <input type="hidden" name="image" value="{{ product.image }}" />
+            <label
+              >Type:
+              <select name="type">
+                <option value="furniture">Furniture</option>
+                <option value="elektronik">Elektronik</option>
+                <option value="lainnya">Lainnya</option>
+              </select>
+            </label>
+
+            <div class="quantity-control">
+              <button type="button" onclick="changeQty(-1)">-</button>
+              <span id="quantity">1</span>
+              <input
+                type="hidden"
+                name="quantity"
+                id="quantityInput"
+                value="1"
+              />
+              <button type="button" onclick="changeQty(1)">+</button>
+            </div>
+
+            <button type="submit">Save Product</button>
+          </form>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <script>
+      let quantity = 1;
+
+      function changeQty(delta) {
+        quantity = Math.max(1, quantity + delta);
+        document.getElementById("quantity").innerText = quantity;
+        document.getElementById("quantityInput").value = quantity; // update ke input hidden
+      }
+
+      function showNotification(message, isError = false) {
+        const notif = document.getElementById("notification");
+        notif.innerText = message;
+        notif.className = "notification" + (isError ? " error" : "");
+        notif.style.display = "block";
+        setTimeout(() => {
+          notif.style.display = "none";
+        }, 3000);
+      }
+
+      // Simulasi notifikasi contoh:
+      // showNotification("Product added successfully!");
+      // showNotification("Failed to crawl product!", true);
+
+      document
+        .getElementById("addProductBtn")
+        ?.addEventListener("click", () => {
+          showNotification("Product added successfully!");
+        });
+    </script>
+  </body>
+</html>

@@ -1,16 +1,282 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>{{ room_name | title }} - DreamHome</title>
-  <style>
-    body { font-family:Arial, sans-serif; margin:0; padding:20px; }
-    a { text-decoration:none; color:#007BFF; }
-  </style>
-</head>
-<body>
-  <a href="/dashboard">← Back</a>
-  <h1>{{ room_name | title }}</h1>
-  <p>This is your {{ room_name }} page. You can add more details later.</p>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>{{ room_name }} - DreamHome</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        color: #222;
+        background: #f9f9f9;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 12px 20px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        z-index: 10;
+      }
+
+      nav a {
+        margin-right: 16px;
+        color: #333;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      main {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+      }
+
+      .sidebar {
+        width: 260px;
+        background: #f8f8f8;
+        padding: 20px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+        overflow-y: auto;
+        height: calc(100vh - 65px);
+        position: sticky;
+        top: 65px;
+      }
+
+      .product-card {
+        background: #fff;
+        padding: 10px;
+        margin-bottom: 12px;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .product-card img {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+        object-fit: cover;
+      }
+
+      .product-card a {
+        text-decoration: none;
+        color: #333;
+        font-weight: bold;
+        font-size: 0.95rem;
+      }
+
+      .content {
+        flex: 1;
+        padding: 40px;
+        position: relative;
+        overflow-y: auto;
+      }
+
+      h2 {
+        margin-top: 0;
+      }
+
+      .product-list {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-top: 30px;
+      }
+
+      .product-item {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: 0.2s;
+      }
+
+      .product-item:hover {
+        transform: scale(1.01);
+      }
+
+      .product-item img {
+        width: 120px;
+        height: 120px;
+        border-radius: 10px;
+        object-fit: cover;
+      }
+
+      .product-info {
+        flex: 1;
+      }
+
+      .product-info h3 {
+        margin: 0 0 6px 0;
+        font-size: 1.3rem;
+      }
+
+      .product-info p {
+        margin: 4px 0;
+        color: #555;
+      }
+
+      footer {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+        background: #fafafa;
+        margin-top: 30px;
+      }
+      .add-btn {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 28px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        cursor: pointer;
+      }
+      .delete-btn {
+        background: none;
+        border: none;
+        color: #ff4d4d;
+        font-size: 18px;
+        cursor: pointer;
+        margin-left: auto;
+        transition: 0.2s;
+      }
+
+      .delete-btn:hover {
+        color: #ff0000;
+        transform: scale(1.2);
+      }
+      .grandtotal {
+        margin-top: 30px;
+        padding: 20px;
+
+        text-align: right;
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <nav style="display: flex; align-items: center; gap: 1px">
+        <a href="/dashboard" style="display: flex; align-items: center">
+          <img
+            src="/static/image/applogo.png"
+            alt="DreamHome Logo"
+            style="height: 37px"
+          />
+        </a>
+        <a href="/dashboard">Dashboard</a>
+      </nav>
+    </header>
+
+    <main>
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <h3>Products in {{ room_name }}</h3>
+        {% if products %} {% for product in products %}
+        <div class="product-card">
+          <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}" />
+          <a href="{{ product['product_url'] }}" target="_blank">
+            {{ product['name'] }}
+          </a>
+          <button
+            class="delete-btn"
+            onclick="deleteProduct({{ product['id'] }})"
+          >
+            ×
+          </button>
+        </div>
+        {% endfor %} {% else %}
+        <p>No products yet in this room.</p>
+        {% endif %}
+      </div>
+
+      <!-- Content utama -->
+      <div class="content">
+        <button
+          class="add-btn"
+          onclick="window.location.href='/{{ room_name }}/add-product'"
+        >
+          +
+        </button>
+
+        <button
+          onclick="window.location.href='/dashboard'"
+          style="
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 1rem;
+            cursor: pointer;
+          "
+        >
+          ⬅ Go Back
+        </button>
+        <h2>Product List for {{ room_name }}</h2>
+
+        <div class="product-list">
+          {% for product in products %}
+          <div class="product-item">
+            <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}" />
+            <div class="product-info">
+              <h3>{{ product['name'] }}</h3>
+              <p>
+                <strong>Type:</strong> {{ product['type'] if product['type']
+                else '—' }}
+              </p>
+              <p>
+                <strong>Price:</strong> Rp {{ product['price'] }}
+              </p>
+              <p>
+                <strong>Quantity:</strong> {{ product['quantity'] if
+                product['quantity'] else 1 }}
+              </p>
+              <p>
+                <strong>Total:</strong> Rp {{ (product['price'] * product['quantity']) }}
+              </p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="grandtotal">
+          <h2>Your Room cost: Rp {{grand_total }}</h2>
+        </div>
+
+        <footer>© DreamHome</footer>
+      </div>
+    </main>
+    <script>
+      function deleteProduct(productId) {
+        if (!confirm("Are you sure you want to delete this product?")) return;
+
+        fetch(`/delete-product/${productId}`, { method: "POST" })
+          .then((response) => {
+            if (response.ok) {
+              location.reload();
+            } else {
+              alert("Failed to delete product.");
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+    </script>
+  </body>
 </html>
