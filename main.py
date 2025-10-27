@@ -4,8 +4,8 @@ from webcrawling import crawl_web_ikea, crawl_web_ruparupa, crawl_web_ufoelektro
 import sqlite3
 
 app = Flask(__name__)
-app.debug = True
-app.config['TEMPLATES_AUTO_RELOAD'] = True
+# app.debug = True
+# app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 DATABASE = 'database.db'
 
