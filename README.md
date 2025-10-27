@@ -1,8 +1,7 @@
 # DreamHome Project
+<img src="static/image/applogo.png" alt="Logo Aplikasi DreamHome" width="150">
 
 DreamHome adalah aplikasi web yang dirancang untuk membantu pengguna merencanakan dan mengelola biaya perabotan untuk rumah impian mereka. Pengguna dapat membuat "ruangan" virtual, mencari produk dari berbagai toko online, menambahkannya ke ruangan mereka, dan secara otomatis mengakumulasi total biaya untuk setiap ruangan.
-
-![Logo Aplikasi DreamHome](themelonnn/dream_home/Dream_Home-8b31b21f7baf43662742524124d48dbb8037f599/static/image/applogo.png)
 
 ## Fitur Utama
 
@@ -57,7 +56,24 @@ Sebelum menjalankan proyek ini, pastikan Anda telah menginstal *library* Python 
     Aplikasi akan berjalan di `http://127.0.0.1:5000`.
 
 ## Susunan Project
-Dream_Home/ ├── createdb.py # Skrip untuk inisialisasi database SQLite ├── database.db # File database (dibuat oleh createdb.py) ├── main.py # File utama aplikasi Flask (routing dan logika utama) ├── webcrawling.py # Modul untuk fungsi web scraping ├── pycache/ # Direktori cache Python ├── static/ │ └── image/ │ ├── applogo.png │ ├── getstartedhero.jpg │ └── hero.jpg └── templates/ ├── add-product.html # Halaman untuk menambah produk via link ├── dashboard.html # Halaman dashboard utama (daftar ruangan) ├── home.html # Halaman landing/beranda └── room.html # Halaman detail untuk satu ruangan (daftar produk)
+```bash
+Dream_Home/
+├── createdb.py              # Skrip untuk inisialisasi database SQLite
+├── database.db              # File database (dibuat oleh createdb.py)
+├── main.py                  # File utama aplikasi Flask (routing dan logika utama)
+├── webcrawling.py           # Modul untuk fungsi web scraping
+├── __pycache__/             # Direktori cache Python
+├── static/
+│   └── image/
+│       ├── applogo.png
+│       ├── getstartedhero.jpg
+│       └── hero.jpg
+└── templates/
+    ├── add-product.html     # Halaman untuk menambah produk via link
+    ├── dashboard.html       # Halaman dashboard utama (daftar ruangan)
+    ├── home.html            # Halaman landing/beranda
+    └── room.html            # Halaman detail untuk satu ruangan (daftar produk)
+```
 
 ## Contoh Penggunaan
 
