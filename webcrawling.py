@@ -60,14 +60,13 @@ def crawl_web_ikea(url):
 
   def extract_images_by_class():
     soup = BeautifulSoup(content, 'html.parser')
-    target_div = soup.find('div', class_='slick slick-pip-images')
-
-    if target_div:
-      image_urls = []
-      for img_tag in target_div.find_all('img'):
-        if 'data-lazy' in img_tag.attrs:
-          image_urls.append(img_tag['data-lazy'])
-      return image_urls
+    image_div = soup.find('div', class_='slick slick-pip-images')
+    image_url = None
+    if image_div:
+        first_img = image_div.find('img', attrs={'data-lazy': True})
+        if first_img:
+            image_url = first_img['data-lazy']
+        return image_url
     else:
       print(f"Error: The specified div with class was not found.")
       return None
@@ -147,17 +146,18 @@ def crawl_web_ruparupa(url):
     target_section = soup.find('section', class_='main-pdp_media-section-container__y37yx')
 
     if target_section:
-      image_urls = []
-      for img_tag in target_section.find_all('img'):
-          if 'src' in img_tag.attrs:
-              image_urls.append(img_tag['src'])
-
-          elif 'data-src' in img_tag.attrs:
-              image_urls.append(img_tag['data-src'])
-      return image_urls
+        first_img = target_section.find('img')
+        if first_img:
+            if 'src' in first_img.attrs:
+                return first_img['src']
+            elif 'data-src' in first_img.attrs:
+                return first_img['data-src']
+        print("Error: No valid image tag found.")
+        return None
     else:
-      print(f"Error: The specified section with class was not found.")
-      return None
+        print("Error: The specified section with class was not found.")
+        return None
+
   image_urls_link = extract_images_by_class()
 
   def display_images_from_urls(image_urls):
@@ -226,21 +226,21 @@ def crawl_web_ufoelektronika(url):
 
   def extract_images_by_class():
     soup = BeautifulSoup(content, 'lxml')
-
     image_div = soup.find('div', class_='product-detail__left')
 
-    image_urls = []
     if image_div:
-        img_tags = image_div.find_all('img')
-        for img in img_tags:
-            if 'src' in img.attrs:
-                image_urls.append(img['src'])
-        return image_urls
-
+        first_img = image_div.find('img')
+        if first_img and 'src' in first_img.attrs:
+            return first_img['src']
+        else:
+            print("Error: No valid image tag found in 'product-detail__left'.")
+            return None
     else:
         print("Error: The specified div with class 'product-detail__left' was not found.")
         return None
+
   image_urls_link = extract_images_by_class()
+
 
   def display_images_from_urls(image_urls):
     if image_urls:
