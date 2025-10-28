@@ -1,11 +1,12 @@
-from flask import Flask, redirect, request, url_for
-from flask import render_template
+from flask import Flask, redirect, request, url_for, render_template
 from webcrawling import crawl_web_ikea, crawl_web_ruparupa, crawl_web_ufoelektronika
 import sqlite3
+import validators
+from datetime import datetime, timedelta
 
 app = Flask(__name__)
-# app.debug = True
-# app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.debug = True
+app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 DATABASE = 'database.db'
 
@@ -14,10 +15,56 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def update_products(room_id):
+    conn = get_db_connection()
+    products = conn.execute("SELECT * FROM products WHERE room_id = ?", (room_id,)).fetchall()
+
+    for p in products:
+        url = p['product_url']
+        product_id = p['id']
+        updated_data = None
+
+        if 'ruparupa' in url:
+            updated_data = crawl_web_ruparupa(url)
+        elif 'ikea' in url:
+            updated_data = crawl_web_ikea(url)
+        elif 'ufoelektronika' in url:
+            updated_data = crawl_web_ufoelektronika(url)
+
+        if updated_data:
+            # Handle tuple atau dict hasil crawler
+            if isinstance(updated_data, tuple):
+                name, price, image = updated_data
+            else:
+                name, price, image = (
+                    updated_data['name'],
+                    updated_data['price'],
+                    updated_data['image']
+                )
+
+            conn.execute("""
+                UPDATE products 
+                SET name = ?, price = ?, image_url = ?
+                WHERE id = ?
+            """, (name, price, image, product_id))
+
+            print(f"[UPDATED] {name} — Rp {price} — {image}")
+
+    # Simpan waktu terakhir update ke tabel rooms
+    now = datetime.now().isoformat()
+    conn.execute("""
+        UPDATE rooms SET last_updated = ?
+        WHERE id = ?
+    """, (now, room_id))
+
+    conn.commit()
+    conn.close()
+
 
 @app.route('/')
 def home():
     return render_template('home.html')
+
 
 @app.route('/dashboard')
 def dashboard():
@@ -26,20 +73,48 @@ def dashboard():
     conn.close()
     return render_template('dashboard.html', rooms=rooms)
 
+
 @app.route('/dashboard/<room_name>')
 def room_page(room_name):
     conn = get_db_connection()
-    room = conn.execute('SELECT * FROM rooms WHERE name = ?', (room_name.replace('-', ' '),)).fetchone()
-    # conn.close()
+    room = conn.execute(
+        'SELECT * FROM rooms WHERE name = ?', 
+        (room_name.replace('-', ' '),)
+    ).fetchone()
 
     if room is None:
-        return "Room not found", 404  # atau bisa juga redirect(url_for('dashboard'))
+        return "Room not found", 404
 
-    products = conn.execute('SELECT * FROM products WHERE room_id = ?', (room['id'],)).fetchall()
+    last_updated = room['last_updated']
+    now = datetime.now()
+
+    should_update = False
+    if not last_updated:
+        should_update = True
+    else:
+        try:
+            last_updated_dt = datetime.fromisoformat(last_updated)
+            if now - last_updated_dt > timedelta(hours=1):
+                should_update = True
+        except:
+            should_update = True
+
+    if should_update:
+        print(f"[UPDATE TRIGGERED] Updating products for room: {room_name}")
+        update_products(room['id'])
+    else:
+        print(f"[SKIPPED] No update needed for room: {room_name}")
+
+    products = conn.execute(
+        'SELECT * FROM products WHERE room_id = ?', 
+        (room['id'],)
+    ).fetchall()
+
     grand_total = sum(product['price'] * product['quantity'] for product in products)
     conn.close()
 
     return render_template('room.html', room_name=room['name'], products=products, grand_total=grand_total)
+
 
 @app.route('/add_room', methods=['POST'])
 def add_room():
@@ -50,6 +125,7 @@ def add_room():
     conn.close()
     return redirect(url_for('dashboard'))
 
+
 @app.route('/delete_room/<int:room_id>', methods=['POST'])
 def delete_room(room_id):
     conn = get_db_connection()
@@ -58,31 +134,46 @@ def delete_room(room_id):
     conn.close()
     return redirect(url_for('dashboard'))
 
+
 @app.route('/<room_name>/add-product', methods=['GET', 'POST'])
 def add_product(room_name):
     product = None
+    error = None
+
     if request.method == 'POST':
         link = request.form['product_url']
         source = request.form['source']
 
-        if source == 'ikea':
-            name, price, image = crawl_web_ikea(link)
-        elif source == 'ruparupa':
-            name, price, image = crawl_web_ruparupa(link)
-        elif source == 'ufoelektronika':
-            name, price, image = crawl_web_ufoelektronika(link)
-        else:
-            name = price = image = None
+        if not validators.url(link):
+            error = "URL tidak valid!"
+            return render_template("add-product.html", room_name=room_name, error=error)
 
-        if name and price and image:
-            product = {
-                'name': name,
-                'price': price,
-                'image': image,
-                'product_url': link
-            }
+        try:
+            if source == 'ikea':
+                name, price, image = crawl_web_ikea(link)
+            elif source == 'ruparupa':
+                name, price, image = crawl_web_ruparupa(link)
+            elif source == 'ufoelektronika':
+                name, price, image = crawl_web_ufoelektronika(link)
+            else:
+                name = price = image = None
 
-    return render_template('add-product.html', room_name=room_name, product=product)
+            if name and price and image:
+                product = {
+                    'name': name,
+                    'price': price,
+                    'image': image,
+                    'product_url': link
+                }
+            else:
+                error = f"Gagal mengambil data dari {source}. Silakan periksa URL atau coba lagi."
+
+        except Exception:
+            error = "Terjadi kesalahan saat mengambil data produk."
+            return render_template("add-product.html", room_name=room_name, error=error)
+
+    return render_template('add-product.html', room_name=room_name, product=product, error=error)
+
 
 @app.route('/<room_name>/save-product', methods=['POST'])
 def save_product(room_name):
@@ -90,21 +181,24 @@ def save_product(room_name):
     room = conn.execute('SELECT id FROM rooms WHERE name = ?', (room_name,)).fetchone()
 
     if room:
+        type_value = request.form['type'] or 'lainnya'
         conn.execute('''
-            INSERT INTO products (room_id, name, price, product_url, image_url, quantity)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO products (room_id, name, price, product_url, image_url, quantity, type)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', (
             room['id'],
             request.form['name'],
             request.form['price'],
-            request.form['product_url'],   # disesuaikan dari form input
-            request.form['image'],   # disesuaikan dari form input
-            request.form.get('quantity', 1)   # disesuaikan dari form input
+            request.form['product_url'],
+            request.form['image'],
+            request.form.get('quantity', 1),
+            type_value
         ))
         conn.commit()
 
     conn.close()
     return redirect(url_for('room_page', room_name=room_name))
+
 
 @app.route('/delete-product/<int:product_id>', methods=['POST'])
 def delete_product(product_id):
@@ -114,3 +208,6 @@ def delete_product(product_id):
     conn.close()
     return '', 204
 
+
+if __name__ == '__main__':
+    app.run(debug=True)

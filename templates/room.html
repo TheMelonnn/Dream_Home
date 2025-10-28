@@ -21,7 +21,10 @@
         background: rgba(255, 255, 255, 0.95);
         padding: 12px 20px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-        z-index: 10;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
 
       nav a {
@@ -29,6 +32,15 @@
         color: #333;
         text-decoration: none;
         font-weight: 600;
+      }
+
+      /* Tombol toggle sidebar */
+      .menu-toggle {
+        display: none;
+        font-size: 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
       }
 
       main {
@@ -46,6 +58,11 @@
         height: calc(100vh - 65px);
         position: sticky;
         top: 65px;
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.hidden {
+        transform: translateX(-100%);
       }
 
       .product-card {
@@ -170,13 +187,41 @@
         font-size: 1.2rem;
         font-weight: bold;
       }
+      /* 🌙 Responsive: sidebar jadi toggle di mobile */
+      @media (max-width: 1024px) {
+        .menu-toggle {
+          display: block;
+        }
+
+        main {
+          position: relative;
+        }
+
+        .sidebar {
+          position: fixed;
+          left: 0;
+          top: 65px;
+          height: calc(100vh - 65px);
+          z-index: 15;
+          transform: translateX(-100%);
+        }
+
+        .sidebar.show {
+          transform: translateX(0);
+        }
+
+        .content {
+          padding: 20px;
+        }
+      }
     </style>
   </head>
 
   <body>
     <header>
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
       <nav style="display: flex; align-items: center; gap: 1px">
-        <a href="/dashboard" style="display: flex; align-items: center">
+        <a href="/#home" style="display: flex; align-items: center">
           <img
             src="/static/image/applogo.png"
             alt="DreamHome Logo"
@@ -189,7 +234,7 @@
 
     <main>
       <!-- Sidebar -->
-      <div class="sidebar">
+      <div class="sidebar" id="sidebar">
         <h3>Products in {{ room_name }}</h3>
         {% if products %} {% for product in products %}
         <div class="product-card">
@@ -243,27 +288,38 @@
                 else '—' }}
               </p>
               <p>
-                <strong>Price:</strong> Rp {{ product['price'] }}
+                <strong>Price:</strong> Rp. {{
+                "{:,}".format(product['price']).replace(",", ".") }}
               </p>
+
               <p>
                 <strong>Quantity:</strong> {{ product['quantity'] if
                 product['quantity'] else 1 }}
               </p>
               <p>
-                <strong>Total:</strong> Rp {{ (product['price'] * product['quantity']) }}
+                <strong>Total:</strong> Rp. {{ "{:,}".format(product['price'] *
+                product['quantity']).replace(",", ".") }}
               </p>
             </div>
           </div>
           {% endfor %}
         </div>
         <div class="grandtotal">
-          <h2>Your Room cost: Rp {{grand_total }}</h2>
+          <h2>
+            Your Room cost: Rp. {{ "{:,}".format(grand_total).replace(",", ".")
+            }}
+          </h2>
         </div>
 
         <footer>© DreamHome</footer>
       </div>
     </main>
     <script>
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("show");
+      }
+
       function deleteProduct(productId) {
         if (!confirm("Are you sure you want to delete this product?")) return;
 

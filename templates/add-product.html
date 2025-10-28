@@ -4,114 +4,197 @@
     <meta charset="UTF-8" />
     <title>Add Product</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #f4f4f4;
-      }
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+  }
 
-      /* Navbar */
-      header {
-        position: sticky;
-        top: 0;
-        background: rgba(255, 255, 255, 0.95);
-        padding: 12px 20px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-        z-index: 10;
-      }
+  /* Navbar */
+  header {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px 20px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+  }
 
-      nav a {
-        margin-right: 16px;
-        color: #333;
-        text-decoration: none;
-        font-weight: 600;
-      }
+  nav a {
+    margin-right: 16px;
+    color: #333;
+    text-decoration: none;
+    font-weight: 600;
+  }
 
-      .content {
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
-        padding: 40px;
-      }
+  .content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px;
+  }
 
-      .form-container {
-        background-color: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        width: 700px;
-        text-align: center;
-      }
+  .form-container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    width: 700px;
+    text-align: center;
+  }
 
-      input[type="text"] {
-        width: 65%;
-        padding: 10px;
-        margin: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
+  input[type="text"],
+  select {
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
 
-      select {
-        width: 25%;
-        padding: 10px;
-        margin: 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-      }
+  input[type="text"] {
+    width: 65%;
+  }
 
-      button {
-        background-color: #333;
-        color: white;
-        padding: 10px 20px;
-        margin-top: 15px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-      }
+  select {
+    width: 25%;
+  }
 
-      button:hover {
-        background-color: #555;
-      }
+  button {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
 
-      .product-preview {
-        margin-top: 30px;
-        text-align: left;
-      }
+  button:hover {
+    background-color: #555;
+  }
 
-      .product-preview img {
-        max-width: 150px;
-        border-radius: 5px;
-      }
+  .product-preview {
+    margin-top: 30px;
+    text-align: left;
+  }
 
-      .quantity-control {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: 10px;
-      }
+  .product-preview img {
+    max-width: 150px;
+    border-radius: 5px;
+  }
 
-      .notification {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: #4caf50;
-        color: white;
-        padding: 15px 25px;
-        border-radius: 5px;
-        display: none;
-        z-index: 1000;
-      }
+  .quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
 
-      .notification.error {
-        background-color: #f44336;
-      }
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #4caf50;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+  }
 
-      .back-btn {
-        background-color: #888;
-        margin-right: 10px;
-      }
-    </style>
+  .notification.error {
+    background-color: #f44336;
+  }
+
+  .back-btn {
+    background-color: #888;
+    margin-right: 10px;
+  }
+
+  /* 🔹 RESPONSIVE STYLES 🔹 */
+  @media (max-width: 1024px) {
+    .content {
+      padding: 20px;
+    }
+
+    .form-container {
+      width: 100%;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      height: 70px;
+      margin: 8px 0;
+      font-size: larger;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    .product-preview {
+      text-align: center;
+      font-size: x-large;
+    }
+
+    label {
+      font-size: large;
+    }
+
+    .product-preview img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .quantity-control {
+      justify-content: center;
+      gap: 50px;
+      margin-left: 30%;
+      margin-right: 30%;
+      margin-top: 50px;
+      margin-bottom: 100px;
+    }
+
+    .saveproduct {
+      width: 30%;
+    }
+
+    nav {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 10px;
+    }
+
+    nav a {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    h2 {
+      font-size: 18px;
+    }
+
+    .form-container {
+      padding: 15px;
+    }
+
+    button {
+      font-size: 15px;
+    }
+  }
+</style>
   </head>
   <body>
     <header>
@@ -136,6 +219,9 @@
     <!-- Content -->
     <div class="content">
       <div class="form-container">
+        {% if error %}
+        <div class="notification error" style="display: block">{{ error }}</div>
+        {% endif %}
         <h2>Enter Product Link</h2>
         <form id="crawlForm" method="POST">
           <input
@@ -167,17 +253,25 @@
             <input
               type="hidden"
               name="product_url"
-              value="{{ product.link }}"
+              value="{{ product.product_url }}"
             />
             <input type="hidden" name="image" value="{{ product.image }}" />
-            <label
-              >Type:
-              <select name="type">
+            <label>
+              Type:
+              <select id="typeSelect" onchange="updateTypeHidden()">
                 <option value="furniture">Furniture</option>
                 <option value="elektronik">Elektronik</option>
-                <option value="lainnya">Lainnya</option>
+                <option value="dekorasi">Dekorasi</option>
+                <option value="mainan">Mainan</option>
+                <option value="peralatan-dapur">Peralatan Dapur</option>
+                <option value="peralatan-mandi">Peralatan Mandi</option>
+                <option value="hewan-peliharaan">Hewan Peliharaan</option>
+                <option value="kebersihan">Kebersihan</option>
+                <option value="lainnya" selected>Lainnya</option>
               </select>
             </label>
+
+            <input type="hidden" name="type" id="typeHidden" value="lainnya" />
 
             <div class="quantity-control">
               <button type="button" onclick="changeQty(-1)">-</button>
@@ -191,7 +285,7 @@
               <button type="button" onclick="changeQty(1)">+</button>
             </div>
 
-            <button type="submit">Save Product</button>
+            <button type="submit" class="saveproduct">Save Product</button>
           </form>
         </div>
         {% endif %}
@@ -207,25 +301,30 @@
         document.getElementById("quantityInput").value = quantity; // update ke input hidden
       }
 
-      function showNotification(message, isError = false) {
-        const notif = document.getElementById("notification");
-        notif.innerText = message;
-        notif.className = "notification" + (isError ? " error" : "");
-        notif.style.display = "block";
-        setTimeout(() => {
-          notif.style.display = "none";
-        }, 3000);
+      function updateTypeHidden() {
+        const selected = document.getElementById("typeSelect").value;
+        document.getElementById("typeHidden").value = selected;
       }
 
-      // Simulasi notifikasi contoh:
-      // showNotification("Product added successfully!");
-      // showNotification("Failed to crawl product!", true);
+      // function showNotification(message, isError = false) {
+      //   const notif = document.getElementById("notification");
+      //   notif.innerText = message;
+      //   notif.className = "notification" + (isError ? " error" : "");
+      //   notif.style.display = "block";
+      //   setTimeout(() => {
+      //     notif.style.display = "none";
+      //   }, 3000);
+      // }
 
-      document
-        .getElementById("addProductBtn")
-        ?.addEventListener("click", () => {
-          showNotification("Product added successfully!");
-        });
+      // // Simulasi notifikasi contoh:
+      // // showNotification("Product added successfully!");
+      // // showNotification("Failed to crawl product!", true);
+
+      // document
+      //   .getElementById("addProductBtn")
+      //   ?.addEventListener("click", () => {
+      //     showNotification("Product added successfully!");
+      //   });
     </script>
   </body>
 </html>
