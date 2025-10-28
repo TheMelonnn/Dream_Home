@@ -3,20 +3,43 @@ from webcrawling import crawl_web_ikea, crawl_web_ruparupa, crawl_web_ufoelektro
 import sqlite3
 import validators
 from datetime import datetime, timedelta
+import time
+import sys
 
 app = Flask(__name__)
-app.debug = True
-app.config['TEMPLATES_AUTO_RELOAD'] = True
+# app.debug = True
+# app.config['TEMPLATES_AUTO_RELOAD'] = True
 
 DATABASE = 'database.db'
 
-def get_db_connection():
+def init_db():
     conn = sqlite3.connect(DATABASE)
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.close()
+
+def get_db_connection():
+    conn = sqlite3.connect(DATABASE, check_same_thread=False, timeout=10)
     conn.row_factory = sqlite3.Row
     return conn
 
-def update_products(room_id):
-    conn = get_db_connection()
+def safe_execute(conn, query, params=(), retries=3):
+    for i in range(retries):
+        try:
+            conn.execute(query, params)
+            return
+        except sqlite3.OperationalError as e:
+            if "database is locked" in str(e):
+                print(f"[WARN] Database locked, retrying ({i+1}/{retries})...")
+                time.sleep(1)
+            else:
+                raise
+
+def update_products(room_id, conn=None):
+    own_conn = False
+    if conn is None:
+        conn = get_db_connection()
+        own_conn = True
+
     products = conn.execute("SELECT * FROM products WHERE room_id = ?", (room_id,)).fetchall()
 
     for p in products:
@@ -52,13 +75,14 @@ def update_products(room_id):
 
     # Simpan waktu terakhir update ke tabel rooms
     now = datetime.now().isoformat()
-    conn.execute("""
+    safe_execute(conn,"""
         UPDATE rooms SET last_updated = ?
         WHERE id = ?
     """, (now, room_id))
 
     conn.commit()
-    conn.close()
+    if own_conn:
+        conn.close()
 
 
 @app.route('/')
@@ -101,7 +125,7 @@ def room_page(room_name):
 
     if should_update:
         print(f"[UPDATE TRIGGERED] Updating products for room: {room_name}")
-        update_products(room['id'])
+        update_products(room['id'], conn)
     else:
         print(f"[SKIPPED] No update needed for room: {room_name}")
 
@@ -210,4 +234,5 @@ def delete_product(product_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    init_db()
+    app.run()
