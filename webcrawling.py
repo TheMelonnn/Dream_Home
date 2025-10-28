@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-from IPython.display import Image, display
+# from IPython.display import Image, display
 import json
 
 def crawl_web_ikea(url):
@@ -72,17 +72,17 @@ def crawl_web_ikea(url):
       return None
   image_urls_link = extract_images_by_class()
 
-  def display_images_from_urls(image_urls):
-    if image_urls:
-      for url in image_urls:
-        try:
-          response = requests.get(url, stream=True)
-          response.raise_for_status()  # Raise an exception for bad status codes
-          display(Image(response.content))
-        except requests.exceptions.RequestException as e:
-          print(f"Error fetching image from URL {url}: {e}")
-    else:
-      print("No image URLs provided to display.")
+  # def display_images_from_urls(image_urls):
+  #   if image_urls:
+  #     for url in image_urls:
+  #       try:
+  #         response = requests.get(url, stream=True)
+  #         response.raise_for_status()  # Raise an exception for bad status codes
+  #         display(Image(response.content))
+  #       except requests.exceptions.RequestException as e:
+  #         print(f"Error fetching image from URL {url}: {e}")
+  #   else:
+  #     print("No image URLs provided to display.")
   # image_content = display_images_from_urls(image_urls_link)
 
   return item_name, item_price, image_urls_link
@@ -160,17 +160,17 @@ def crawl_web_ruparupa(url):
 
   image_urls_link = extract_images_by_class()
 
-  def display_images_from_urls(image_urls):
-    if image_urls:
-      for url in image_urls:
-        try:
-          response = requests.get(url, stream=True)
-          response.raise_for_status()  # Raise an exception for bad status codes
-          display(Image(response.content))
-        except requests.exceptions.RequestException as e:
-          print(f"Error fetching image from URL {url}: {e}")
-    else:
-      print("No image URLs provided to display.")
+  # def display_images_from_urls(image_urls):
+  #   if image_urls:
+  #     for url in image_urls:
+  #       try:
+  #         response = requests.get(url, stream=True)
+  #         response.raise_for_status()  # Raise an exception for bad status codes
+  #         display(Image(response.content))
+  #       except requests.exceptions.RequestException as e:
+  #         print(f"Error fetching image from URL {url}: {e}")
+  #   else:
+  #     print("No image URLs provided to display.")
   # image_content = display_images_from_urls(image_urls_link)
 
   return item_name, item_price, image_urls_link
@@ -242,17 +242,17 @@ def crawl_web_ufoelektronika(url):
   image_urls_link = extract_images_by_class()
 
 
-  def display_images_from_urls(image_urls):
-    if image_urls:
-      for url in image_urls:
-        try:
-          response = requests.get(url, stream=True)
-          response.raise_for_status()  # Raise an exception for bad status codes
-          display(Image(response.content))
-        except requests.exceptions.RequestException as e:
-          print(f"Error fetching image from URL {url}: {e}")
-    else:
-      print("No image URLs provided to display.")
+  # def display_images_from_urls(image_urls):
+  #   if image_urls:
+  #     for url in image_urls:
+  #       try:
+  #         response = requests.get(url, stream=True)
+  #         response.raise_for_status()  # Raise an exception for bad status codes
+  #         display(Image(response.content))
+  #       except requests.exceptions.RequestException as e:
+  #         print(f"Error fetching image from URL {url}: {e}")
+  #   else:
+  #     print("No image URLs provided to display.")
   # image_content = display_images_from_urls(image_urls_link)
 
   return item_name, item_price, image_urls_link
