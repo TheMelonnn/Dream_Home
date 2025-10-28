@@ -21,7 +21,10 @@
         background: rgba(255, 255, 255, 0.95);
         padding: 12px 20px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-        z-index: 10;
+        z-index: 20;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
       }
 
       nav a {
@@ -29,6 +32,15 @@
         color: #333;
         text-decoration: none;
         font-weight: 600;
+      }
+
+      /* Tombol toggle sidebar */
+      .menu-toggle {
+        display: none;
+        font-size: 24px;
+        background: none;
+        border: none;
+        cursor: pointer;
       }
 
       main {
@@ -46,6 +58,11 @@
         height: calc(100vh - 65px);
         position: sticky;
         top: 65px;
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar.hidden {
+        transform: translateX(-100%);
       }
 
       .room-card {
@@ -140,7 +157,6 @@
         margin-top: 30px;
       }
 
-      /* ✨ Card besar: vertikal & lebih besar */
       .big-room-list {
         display: flex;
         flex-direction: column;
@@ -182,14 +198,43 @@
         transform: scale(1.01);
         transition: 0.2s;
       }
+
+      /* 🌙 Responsive: sidebar jadi toggle di mobile */
+      @media (max-width: 1024px) {
+        .menu-toggle {
+          display: block;
+        }
+
+        main {
+          position: relative;
+        }
+
+        .sidebar {
+          position: fixed;
+          left: 0;
+          top: 65px;
+          height: calc(100vh - 65px);
+          z-index: 15;
+          transform: translateX(-100%);
+        }
+
+        .sidebar.show {
+          transform: translateX(0);
+        }
+
+        .content {
+          padding: 20px;
+        }
+      }
     </style>
   </head>
   <body>
     <header>
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
       <nav style="display: flex; align-items: center; gap: 1px">
         <a href="/#home" style="display: flex; align-items: center">
           <img
-            src="static/image/applogo.png"
+            src="/static/image/applogo.png"
             alt="DreamHome Logo"
             style="height: 37px"
           />
@@ -199,7 +244,7 @@
     </header>
 
     <main>
-      <div class="sidebar">
+      <div class="sidebar" id="sidebar">
         <h3>Your Rooms</h3>
         {% for room in rooms %}
         <div class="room-card">
@@ -221,17 +266,17 @@
           <input
             type="text"
             name="room_name"
-            placeholder="Room name..."
+            placeholder="Room name... (20 char)"
             autocomplete="off"
+            maxlength="20"
             required
           />
           <button type="submit">Add</button>
         </form>
 
         <h2>Your rooms list</h2>
-        <p>Select a room to view details or select "+" to add a new room.</p>
-
-        <!-- ✨ Card besar vertikal -->
+        <p>Select a room to view details or select "+" to add a new room. <br /><br /></p>
+    
         <div class="big-room-list">
           {% for room in rooms %}
           <div
@@ -269,6 +314,12 @@
             })
             .catch(() => alert("Error occurred while deleting room."));
         }
+      }
+
+      // 🌙 Sidebar toggle for mobile
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("show");
       }
     </script>
   </body>

@@ -38,7 +38,7 @@ Sebelum menjalankan proyek ini, pastikan Anda telah menginstal *library* Python 
 3.  **Install dependensi:**
     Tertulis di requirements.txt
     ```bash
-    pip install Flask requests beautifulsoup4 lxml
+    pip install Flask requests beautifulsoup4 lxml validators
     ```
 
 4.  **Inisialisasi database:**

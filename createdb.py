@@ -5,7 +5,8 @@ c = conn.cursor()
 c.execute('''
     CREATE TABLE IF NOT EXISTS rooms (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
+        name TEXT NOT NULL,
+        last_updated TIMESTAMP
     )
 ''')
 
@@ -18,6 +19,7 @@ c.execute('''
         image_url TEXT NOT NULL,
         room_id INTEGER NOT NULL,
         quantity INTEGER DEFAULT 1,
+        type TEXT NOT NULL,
         FOREIGN KEY (room_id) REFERENCES rooms (id) ON DELETE CASCADE
     )
 ''')    
