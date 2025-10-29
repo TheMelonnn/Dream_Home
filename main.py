@@ -37,14 +37,12 @@ def safe_execute(conn, query, params=(), retries=3):
             else:
                 raise
 
-def update_products(room_id, conn=None):
+def update_products(room_id):
     # Jika tidak ada koneksi dikirim, buat baru dan tandai untuk ditutup
-    own_conn = False
-    if conn is None:
-        conn = get_db_connection()
-        own_conn = True
+    conn = None
 
     try:
+        conn = get_db_connection()
         # Gunakan cursor lokal
         cur = conn.cursor()
         cur.execute("SELECT * FROM products WHERE room_id = ?", (room_id,))
@@ -93,7 +91,7 @@ def update_products(room_id, conn=None):
     except sqlite3.Error as e:
         print(f"[ERROR] update_products failed: {e}")
     finally:
-        if own_conn:
+        if conn:
             conn.close()
 
 
@@ -120,6 +118,7 @@ def room_page(room_name):
     ).fetchone()
 
     if room is None:
+        conn.close()
         return "Room not found", 404
 
     last_updated = room['last_updated']
@@ -131,14 +130,14 @@ def room_page(room_name):
     else:
         try:
             last_updated_dt = datetime.fromisoformat(last_updated)
-            if now - last_updated_dt > timedelta(hours=1):
+            if now - last_updated_dt > timedelta(seconds=1):
                 should_update = True
         except:
             should_update = True
 
     if should_update:
         print(f"[UPDATE TRIGGERED] Updating products for room: {room_name}")
-        update_products(room['id'], conn)
+        update_products(room['id'])
     else:
         print(f"[SKIPPED] No update needed for room: {room_name}")
 
@@ -158,7 +157,7 @@ def add_room():
     room_name = request.form['room_name']
     conn = get_db_connection()
     safe_execute(conn, 'INSERT INTO rooms (name) VALUES (?)', (room_name,))
-    conn.commit()
+    # conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
 
@@ -167,7 +166,7 @@ def add_room():
 def delete_room(room_id):
     conn = get_db_connection()
     safe_execute(conn, 'DELETE FROM rooms WHERE id = ?', (room_id,))
-    conn.commit()
+    # conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
 
@@ -231,7 +230,7 @@ def save_product(room_name):
             request.form.get('quantity', 1),
             type_value
         ))
-        conn.commit()
+        # conn.commit()
 
     conn.close()
     return redirect(url_for('room_page', room_name=room_name))
@@ -241,7 +240,7 @@ def save_product(room_name):
 def delete_product(product_id):
     conn = get_db_connection()
     safe_execute(conn, 'DELETE FROM products WHERE id = ?', (product_id,))
-    conn.commit()
+    # conn.commit()
     conn.close()
     return '', 204
 
