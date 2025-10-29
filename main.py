@@ -138,9 +138,7 @@ def room_page(room_name):
 
     if should_update:
         print(f"[UPDATE TRIGGERED] Updating products for room: {room_name}")
-        conn.close()
         update_products(room['id'], conn)
-        conn = get_db_connection()
     else:
         print(f"[SKIPPED] No update needed for room: {room_name}")
 
