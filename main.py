@@ -130,7 +130,7 @@ def room_page(room_name):
     else:
         try:
             last_updated_dt = datetime.fromisoformat(last_updated)
-            if now - last_updated_dt > timedelta(seconds=1):
+            if now - last_updated_dt > timedelta(minutes=30):
                 should_update = True
         except:
             should_update = True
