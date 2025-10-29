@@ -80,7 +80,7 @@ def update_products(room_id, conn=None):
                 WHERE id = ?
             """, (name, price, image, product_id))
 
-            print(f"[UPDATED] {name} — Rp {price} — {image}")
+            print(f"UPDATED")
 
         # Update last_updated di tabel rooms
         now = datetime.now().isoformat()
@@ -138,7 +138,7 @@ def room_page(room_name):
 
     if should_update:
         print(f"[UPDATE TRIGGERED] Updating products for room: {room_name}")
-        # conn.close()
+        conn.close()
         update_products(room['id'], conn)
         conn = get_db_connection()
     else:
