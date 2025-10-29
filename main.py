@@ -38,37 +38,43 @@ def safe_execute(conn, query, params=(), retries=3):
                 raise
 
 def update_products(room_id, conn=None):
+    # Jika tidak ada koneksi dikirim, buat baru dan tandai untuk ditutup
     own_conn = False
     if conn is None:
         conn = get_db_connection()
         own_conn = True
 
-    products = safe_execute(conn, "SELECT * FROM products WHERE room_id = ?", (room_id,)).fetchall()
+    try:
+        # Gunakan cursor lokal
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM products WHERE room_id = ?", (room_id,))
+        products = cur.fetchall()
 
-    for p in products:
-        url = p['product_url']
-        product_id = p['id']
-        updated_data = None
+        for p in products:
+            url = p['product_url']
+            product_id = p['id']
+            updated_data = None
 
-        if 'ruparupa' in url:
-            updated_data = crawl_web_ruparupa(url)
-        elif 'ikea' in url:
-            updated_data = crawl_web_ikea(url)
-        elif 'ufoelektronika' in url:
-            updated_data = crawl_web_ufoelektronika(url)
+            if 'ruparupa' in url:
+                updated_data = crawl_web_ruparupa(url)
+            elif 'ikea' in url:
+                updated_data = crawl_web_ikea(url)
+            elif 'ufoelektronika' in url:
+                updated_data = crawl_web_ufoelektronika(url)
 
-        if updated_data:
-            # Handle tuple atau dict hasil crawler
+            if not updated_data:
+                continue
+
             if isinstance(updated_data, tuple):
                 name, price, image = updated_data
             else:
                 name, price, image = (
-                    updated_data['name'],
-                    updated_data['price'],
-                    updated_data['image']
+                    updated_data.get('name'),
+                    updated_data.get('price'),
+                    updated_data.get('image')
                 )
 
-            safe_execute(conn, """
+            cur.execute("""
                 UPDATE products 
                 SET name = ?, price = ?, image_url = ?
                 WHERE id = ?
@@ -76,16 +82,20 @@ def update_products(room_id, conn=None):
 
             print(f"[UPDATED] {name} — Rp {price} — {image}")
 
-    # Simpan waktu terakhir update ke tabel rooms
-    now = datetime.now().isoformat()
-    safe_execute(conn,"""
-        UPDATE rooms SET last_updated = ?
-        WHERE id = ?
-    """, (now, room_id))
+        # Update last_updated di tabel rooms
+        now = datetime.now().isoformat()
+        cur.execute("""
+            UPDATE rooms SET last_updated = ?
+            WHERE id = ?
+        """, (now, room_id))
 
-    conn.commit()
-    if own_conn:
-        conn.close()
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"[ERROR] update_products failed: {e}")
+    finally:
+        if own_conn:
+            conn.close()
+
 
 
 @app.route('/')
