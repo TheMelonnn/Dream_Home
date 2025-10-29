@@ -20,6 +20,8 @@ def init_db():
 def get_db_connection():
     conn = sqlite3.connect(DATABASE, check_same_thread=False, timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA BUSY_TIMEOUT=10000;")
     return conn
 
 def safe_execute(conn, query, params=(), retries=3):
@@ -65,7 +67,7 @@ def update_products(room_id, conn=None):
                     updated_data['image']
                 )
 
-            conn.execute("""
+            safe_execute(conn, """
                 UPDATE products 
                 SET name = ?, price = ?, image_url = ?
                 WHERE id = ?
@@ -125,7 +127,9 @@ def room_page(room_name):
 
     if should_update:
         print(f"[UPDATE TRIGGERED] Updating products for room: {room_name}")
+        conn.close()
         update_products(room['id'], conn)
+        conn = get_db_connection()
     else:
         print(f"[SKIPPED] No update needed for room: {room_name}")
 
@@ -144,7 +148,7 @@ def room_page(room_name):
 def add_room():
     room_name = request.form['room_name']
     conn = get_db_connection()
-    conn.execute('INSERT INTO rooms (name) VALUES (?)', (room_name,))
+    safe_execute(conn, 'INSERT INTO rooms (name) VALUES (?)', (room_name,))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
@@ -153,7 +157,7 @@ def add_room():
 @app.route('/delete_room/<int:room_id>', methods=['POST'])
 def delete_room(room_id):
     conn = get_db_connection()
-    conn.execute('DELETE FROM rooms WHERE id = ?', (room_id,))
+    safe_execute(conn, 'DELETE FROM rooms WHERE id = ?', (room_id,))
     conn.commit()
     conn.close()
     return redirect(url_for('dashboard'))
@@ -206,7 +210,7 @@ def save_product(room_name):
 
     if room:
         type_value = request.form['type'] or 'lainnya'
-        conn.execute('''
+        safe_execute(conn, '''
             INSERT INTO products (room_id, name, price, product_url, image_url, quantity, type)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ''', (
@@ -227,7 +231,7 @@ def save_product(room_name):
 @app.route('/delete-product/<int:product_id>', methods=['POST'])
 def delete_product(product_id):
     conn = get_db_connection()
-    conn.execute('DELETE FROM products WHERE id = ?', (product_id,))
+    safe_execute(conn, 'DELETE FROM products WHERE id = ?', (product_id,))
     conn.commit()
     conn.close()
     return '', 204
