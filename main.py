@@ -43,7 +43,7 @@ def update_products(room_id, conn=None):
         conn = get_db_connection()
         own_conn = True
 
-    products = conn.execute("SELECT * FROM products WHERE room_id = ?", (room_id,)).fetchall()
+    products = safe_execute(conn, "SELECT * FROM products WHERE room_id = ?", (room_id,)).fetchall()
 
     for p in products:
         url = p['product_url']
