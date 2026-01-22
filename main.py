@@ -5,7 +5,7 @@ import validators
 from datetime import datetime, timedelta
 import time
 import sys
-from portofoliocrawling import run_crawl
+from portofoliocrawling import run_crawl, run_crawl_crypto
 
 app = Flask(__name__)
 # app.debug = True
@@ -249,6 +249,7 @@ def delete_product(product_id):
 def run():
     try:
         run_crawl()
+        run_crawl_crypto()
         return render_template("updateportofolio.html", status="update success")
     except Exception as e:
         return f"<p>Update failed: {e}</p>", 500
