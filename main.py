@@ -220,8 +220,8 @@ def save_product(room_name):
     if room:
         type_value = request.form['type'] or 'lainnya'
         safe_execute(conn, '''
-            INSERT INTO products (room_id, name, price, product_url, image_url, quantity, type)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO products (room_id, name, price, product_url, image_url, quantity, type, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             room['id'],
             request.form['name'],
@@ -229,7 +229,8 @@ def save_product(room_name):
             request.form['product_url'],
             request.form['image'],
             request.form.get('quantity', 1),
-            type_value
+            type_value,
+            None
         ))
         # conn.commit()
 
@@ -253,6 +254,24 @@ def run():
         return render_template("updateportofolio.html", status="update success")
     except Exception as e:
         return f"<p>Update failed: {e}</p>", 500
+    
+@app.route('/update-note', methods=['POST'])
+def update_note():
+    data = request.get_json()
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            "UPDATE products SET notes = ? WHERE id = ?",
+            (data['notes'], data['product_id'])
+        )
+        conn.commit()
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "error", "msg": str(e)}, 500
+    finally:
+        conn.close()
+
+
 
 
 if __name__ == '__main__':

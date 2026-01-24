@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -187,6 +187,27 @@
         font-size: 1.2rem;
         font-weight: bold;
       }
+
+      .notes-container {
+        margin-top: 10px;
+        color: #555;
+      }
+
+      .save-notes-btn {
+        margin-top: 6px;
+        background: none;
+        color: white;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .save-notes-btn:hover {
+        background: none;
+}
+
       /* 🌙 Responsive: sidebar jadi toggle di mobile */
       @media (max-width: 1024px) {
         .menu-toggle {
@@ -264,7 +285,7 @@
         </button>
 
         <button
-          onclick="window.location.href='/dashboard'"
+          onclick="window.location.href = '/dashboard'"
           style="
             background: none;
             border: none;
@@ -282,7 +303,13 @@
           <div class="product-item">
             <img src="{{ product['image_url'] }}" alt="{{ product['name'] }}" />
             <div class="product-info">
-              <h3>{{ product['name'] }}</h3>
+              <a
+                href="{{ product['product_url'] }}"
+                target="_blank"
+                style="color: black; text-decoration: none"
+              >
+                <h3>{{ product['name'] }}</h3>
+              </a>
               <p>
                 <strong>Type:</strong> {{ product['type'] if product['type']
                 else '—' }}
@@ -299,7 +326,23 @@
               <p>
                 <strong>Total:</strong> Rp. {{ "{:,}".format(product['price'] *
                 product['quantity']).replace(",", ".") }}
-              </p>
+              </p> </br>
+              
+              <div class="notes-container" data-product-id="{{ product['id'] }}">
+                <strong>Notes:</strong>
+
+                <div
+                  class="notes-text"
+                  contenteditable="true"
+                  data-original="{{ product['notes'] if product['notes'] else '' }}"
+                >
+                  {{ product['notes'] if product['notes'] else '' }}
+                </div>
+
+                <button class="save-notes-btn" style="display:none">💾</button>
+              </div>
+
+              
             </div>
           </div>
           {% endfor %}
@@ -333,6 +376,40 @@
           })
           .catch((error) => console.error("Error:", error));
       }
+      
+      document.querySelectorAll(".notes-container").forEach(container => {
+      const noteEl = container.querySelector(".notes-text");
+      const saveBtn = container.querySelector(".save-notes-btn");
+      const productId = container.dataset.productId;
+      const original = noteEl.dataset.original.trim();
+
+      noteEl.addEventListener("input", () => {
+        const current = noteEl.innerText.trim();
+        saveBtn.style.display = current !== original ? "inline-block" : "none";
+      });
+
+      saveBtn.addEventListener("click", () => {
+        const notes = noteEl.innerText.trim();
+
+        fetch("/update-note", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: productId,
+            notes: notes
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "ok") {
+            noteEl.dataset.original = notes;
+            saveBtn.style.display = "none";
+          } else {
+            alert("Gagal menyimpan notes");
+          }
+        });
+      });
+    });
     </script>
   </body>
 </html>
