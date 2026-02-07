@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import gspread
+import re
 
 def crawl_web_antam(url):
     headers = {
@@ -123,6 +124,48 @@ def run_crawl_crypto():
     end_row = start_row + len(rows) - 1
 
     worksheet.update(f"C{start_row}:D{end_row}", rows)
+    return True
+
+def crawl_web_pegadaian(url):
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        )
+    }
+
+    response = requests.get(url, headers=headers, timeout=20)
+    response.raise_for_status()
+
+    soup = BeautifulSoup(response.text, "lxml")
+
+    prices = soup.select("div.mlbuysel--gold-price")
+
+    if len(prices) < 2:
+        print("Harga beli / jual tidak ditemukan")
+        return None
+
+    def parse_price(text):
+        return int(re.sub(r"[^\d]", "", text))
+
+    harga_beli = parse_price(prices[0].get_text())
+    harga_jual = parse_price(prices[1].get_text())
+
+    return harga_beli, harga_jual
+
+def run_crawl_pegadaian():
+    gc = gspread.service_account(filename="portofoliomanager-56b48bd00efa.json")
+
+    spreadsheet_url = "https://docs.google.com/spreadsheets/d/1g4ikZC3Xr9AkKmaT4KHJ-NCGRszJv8d7e0LcAiMma54/edit"
+    spreadsheet = gc.open_by_url(spreadsheet_url)
+
+    worksheet = spreadsheet.worksheet("My Portofolio")
+
+    harga_beli, harga_jual = crawl_web_pegadaian("https://www.bareksa.com/bareksaemas")
+    range = "C23:E23"
+    rows = ["Emas Digital", harga_beli, harga_jual]
+    worksheet.update(range, [rows])
     return True
 
 
