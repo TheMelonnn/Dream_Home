@@ -5,7 +5,7 @@ import validators
 from datetime import datetime, timedelta
 import time
 import sys
-from portofoliocrawling import run_crawl, run_crawl_crypto
+from portofoliocrawling import run_crawl, run_crawl_crypto, run_crawl_pegadaian
 
 app = Flask(__name__)
 # app.debug = True
@@ -251,6 +251,7 @@ def run():
     try:
         run_crawl()
         run_crawl_crypto()
+        run_crawl_pegadaian()
         return render_template("updateportofolio.html", status="update success")
     except Exception as e:
         return f"<p>Update failed: {e}</p>", 500
